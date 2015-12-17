@@ -20,3 +20,5 @@ Steps to install and run the project listed below.
 9) Click marker for extra info
 
 10) Alternatively to run the page without node, install CORS plugin and turn on the plugin on chrome and change api from /tracking to www3.septa.org/hackathon/TransitViewAll/
+
+11) Screenshot of maps with markers 
