@@ -3,8 +3,8 @@
   <head>
     <style>
       #map {
-        width: 1200px;
-        height: 780px;
+        width: 1000px;
+        height: 650px;
       }
     </style>
     <script src="https://maps.googleapis.com/maps/api/js"></script>
@@ -14,9 +14,12 @@
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <!--<script src="https://code.jquery.com/jquery-2.1.4.js"></script> -->
     <script>
+
       var map;
       var markers = [];
       var routes = new Array();
+      var bounds;
+
       function initialize() {
         var mapCanvas = document.getElementById('map');
         var mapOptions = {
@@ -25,6 +28,8 @@
           mapTypeId: google.maps.MapTypeId.ROADMAP
         }
         map = new google.maps.Map(mapCanvas, mapOptions)
+
+        // Get septa live json file from api 
         $.get("/tracking", function(data, status){
           var propName = Object.keys(data)[0];
           transitArr = data[propName];
@@ -34,8 +39,10 @@
             $(".dropdown-menu").append('<li class=' + indexPropName + '><a href="#">' + indexPropName + '</a></li>');
 
             var route = routeObj[indexPropName];
-            routes[indexPropName] = route;
+            routes[indexPropName] = route;   // Store copy of all routes 
           }
+
+          // Clear old markers and Show Markers on Route selection
           $(".dropdown-menu li").on('click', function() {
             clearMarkers();
             var routeid =  $(this)[0].className;
@@ -43,10 +50,11 @@
               var route = routes[routeid];
               var vehicle = route[j];
               var vehicleLoc = { lat: vehicle["lat"], lng : vehicle["lng"]};
-              addMarker(vehicleLoc, routeid, vehicle["Direction"]);
+              addMarker(vehicleLoc, j, routeid, vehicle["Direction"]);
             }
+            map.fitBounds(bounds);
           });
-         // alert("Data: " + transitArr + "\nStatus: " + status);
+
         });
 
       }
@@ -54,7 +62,8 @@
       
 
       // Adds a marker to the map.
-      function addMarker(location, label, direction) {
+      function addMarker(location, label, routeid, direction) {
+        bounds = new google.maps.LatLngBounds();
         var marker = new google.maps.Marker({
           position: location,
           label: label,
@@ -62,8 +71,10 @@
         });
 
         markers.push(marker);
+        bounds.extend(marker.position);
+
         var infowindow = new google.maps.InfoWindow({
-          content: label +  " " + direction
+          content: routeid +  " " + direction
         });
 
 
@@ -80,7 +91,7 @@
         }
       }
 
-      // Removes the markers from the map, but keeps them in the array.
+      // Removes the markers from the map
       function clearMarkers() {
         setMapOnAll(null);
         markers = [];
